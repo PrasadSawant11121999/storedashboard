@@ -1,10 +1,11 @@
 import streamlit as st
+
+
 st.set_page_config(
-    page_title="Store App",  # Title of the app
+    page_title="Contact Me",
     page_icon="🛒",         # Optional: Set an icon for the app
     layout="wide"           # Optional: Set the layout to wide
 )
-
 
 
 st.markdown("""
@@ -20,3 +21,11 @@ st.markdown("""
             }
     </style>
 """,unsafe_allow_html=True)
+
+def app():
+   pass
+
+    
+if __name__ == "__main__":
+    app()
+
