@@ -1,6 +1,10 @@
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
 st.set_page_config(
     page_title="Dashboard",
     page_icon="🛒",         # Optional: Set an icon for the app
@@ -19,34 +23,36 @@ st.markdown("""
             }
     </style>
 """,unsafe_allow_html=True)
+df = pd.read_csv('./data/Cleaned_data_06_25_2024.csv')
 def app():
     # Create tabs
-    index_tab, order_report, sales_report, inventory_report = st.tabs(["Index", "Order Report", "Sales Report", "Inventory Report"])
+    index_tab, order_report, sales_report, inventory_report = st.tabs(["Order Analysis By Demographics", "Order Report", "Sales Report", "Inventory Report"])
 
     with index_tab:
-        st.title('Interactive Horizontal Bar Plot')
+        grouped_states_by_profit_data = df.groupby(['Country', 'State']).agg({
+            'Row ID': 'count'
+        }).reset_index().rename(columns={'Row ID': 'Count'}).sort_values('Count', ascending=True)
+        top_states = grouped_states_by_profit_data.tail(10)
+        x = top_states['State']
+        y = top_states['Count']
+        fig = px.bar(top_states, x=y, y=x, orientation='h', 
+                    labels={'x': 'Count', 'y': 'States'},
+                    title='Order Count By States')
+        
+        top_state = top_states.iloc[-1]['State']
+        top_states_order = top_states.iloc[-1]['Count']    
 
-        categories = st.text_input('Enter categories (comma-separated)', 'Category A, Category B, Category C, Category D')
-        values = st.text_input('Enter values (comma-separated)', '23, 45, 56, 78')
+        st.title('Order Analysis By States')
+        col1, col2 = st.columns([1,2])
+        with col1:
+            st.dataframe(grouped_states_by_profit_data)
+        
+        with col2:
+            st.plotly_chart(fig)
 
-        categories = [cat.strip() for cat in categories.split(',')]
-        values = [int(val.strip()) for val in values.split(',')]
-
-        # Create a horizontal bar plot using Plotly
-        fig = go.Figure(go.Bar(
-            y=categories,
-            x=values,
-            orientation='h'
-        ))
-
-        fig.update_layout(
-            title='Horizontal Bar Plot',
-            xaxis_title='Values',
-            yaxis_title='Categories',
-        )
-
-        # Display the plot in Streamlit
-        st.plotly_chart(fig)
+        st.markdown(f"""
+            <div style="font-size: 18px; font-weight: bold;">{top_state} is the top order({top_states_order}) placing state</div>
+        """, unsafe_allow_html=True)
 
     with order_report:
         st.header("Order Report")
