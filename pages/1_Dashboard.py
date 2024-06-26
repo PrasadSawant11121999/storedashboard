@@ -3,7 +3,6 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 st.set_page_config(
     page_title="Dashboard",
@@ -29,6 +28,7 @@ def app():
     index_tab, order_report, sales_report, inventory_report = st.tabs(["Order Analysis By Demographics", "Order Report", "Sales Report", "Inventory Report"])
 
     with index_tab:
+
         grouped_states_by_profit_data = df.groupby(['Country', 'State']).agg({
             'Row ID': 'count'
         }).reset_index().rename(columns={'Row ID': 'Count'}).sort_values('Count', ascending=True)
@@ -42,6 +42,7 @@ def app():
         top_state = top_states.iloc[-1]['State']
         top_states_order = top_states.iloc[-1]['Count']    
 
+        #Order Analysis By States- Visualization
         st.title('Order Analysis By States')
         col1, col2 = st.columns([1,2])
         with col1:
@@ -54,21 +55,38 @@ def app():
             <div style="font-size: 18px; font-weight: bold;">{top_state} is the top order({top_states_order}) placing state</div>
         """, unsafe_allow_html=True)
 
+        #Order Analysis By Region- Visualization
+        st.title('Order Analysis By Region')
+        grouped_region_by_profit_data = df.groupby(['Country','Region']).agg({
+            'Row ID': 'count'
+        }).reset_index().rename(columns={'Row ID': 'Count'}).sort_values('Count', ascending=True)
+
+        fig = go.Figure(data=[go.Pie(labels=grouped_region_by_profit_data['Region'], values=grouped_region_by_profit_data['Count'])])
+        col1, col2 = st.columns([1,2])
+
+        with col1:
+            st.plotly_chart(fig)
+
+        with col2:
+            st.dataframe(grouped_region_by_profit_data)
+
+        #Order Analysis By Country-City Visualization
+        st.title('Order Count Grouped by States and Cities')
+        grouped_data_by_States_and_Cities = df.groupby(['State', 'City']).size().reset_index(name='OrderCount').sort_values('OrderCount', ascending=True).tail(10)
+        col1, col2 = st.columns([1,2])
+        fig = px.bar(grouped_data_by_States_and_Cities, x='OrderCount', y='City', color='State',
+                    title='Order Count Grouped by States and Cities',
+                    labels={'OrderCount': 'Order Count', 'City': 'City'})
+        with col1:
+            st.dataframe(grouped_data_by_States_and_Cities)
+
+        with col2:            
+            st.plotly_chart(fig)
+        
+            
+        
     with order_report:
-        st.header("Order Report")
-        # Set the title of the Streamlit app
-        st.title('Interactive Pie Chart')
-        labels = st.text_input('Enter labels (comma-separated)', 'Label 1, Label 2, Label 3')
-        values = st.text_input('Enter values (comma-separated)', '30, 40, 50')
-
-        labels = [label.strip() for label in labels.split(',')]
-        values = [int(val.strip()) for val in values.split(',')]
-
-        # Create a pie chart using Plotly
-        fig = px.pie(values=values, names=labels, title='Pie Chart')
-
-        # Display the plot in Streamlit
-        st.plotly_chart(fig)
+        pass
 
     with sales_report:
         st.header("Sales Report")
